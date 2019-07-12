@@ -355,7 +355,8 @@ def parse_args(args):
     group = parser.add_mutually_exclusive_group()
     # MlOps/Horovod Framework specific command line parameters
     parser.add_argument('--dataset-path',    help='Path to the training dataset.', dest='dataset_path', type=str)
-    parser.add_argument('--output-path',     help='Path to the trained model output'., dest='output_path', type=str)
+    parser.add_argument('--output-path',     help='Path to the trained model output.', dest='output_path', type=str)
+    parser.add_argument('--tracking-uri'     help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
 
     # keras-retinanet specific command line parameters
     parser.add_argument('--dataset',         help='Training dataset Name.', dest='dataset_type')
