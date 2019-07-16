@@ -128,16 +128,16 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         )
         callbacks.append(tensorboard_callback)
 
-    if args.evaluation and validation_generator:
-        if args.dataset_type == 'coco':
-            from ..callbacks.coco import CocoEval
+    # if args.evaluation and validation_generator:
+    #     if args.dataset_type == 'coco':
+    #         from ..callbacks.coco import CocoEval
 
-            # use prediction model for evaluation
-            evaluation = CocoEval(validation_generator, tensorboard=tensorboard_callback)
-        else:
-            evaluation = Evaluate(validation_generator, tensorboard=tensorboard_callback)
-        evaluation = RedirectModel(evaluation, prediction_model)
-        callbacks.append(evaluation)
+    #         # use prediction model for evaluation
+    #         evaluation = CocoEval(validation_generator, tensorboard=tensorboard_callback)
+    #     else:
+    #         evaluation = Evaluate(validation_generator, tensorboard=tensorboard_callback)
+    #     evaluation = RedirectModel(evaluation, prediction_model)
+    #     callbacks.append(evaluation)
 
     callbacks.append(keras.callbacks.ReduceLROnPlateau(
         monitor  = 'loss',
@@ -352,14 +352,15 @@ def parse_args(args):
 #    csv_parser.add_argument('classes', help='Path to a CSV file containing class label mapping.')
 #    csv_parser.add_argument('--val-annotations', help='Path to CSV file containing annotations for validation (optional).')
 
-    group = parser.add_mutually_exclusive_group()
     # MlOps/Horovod Framework specific command line parameters
     parser.add_argument('--dataset-path',    help='Path to the training dataset.', dest='dataset_path', type=str)
     parser.add_argument('--output-path',     help='Path to the trained model output.', dest='output_path', type=str)
-    parser.add_argument('--tracking-uri'     help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
+    parser.add_argument('--tracking-uri,'    help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
+    parser.add_argument('--experiment-name', help='MlFlow Experiment Name.', dest='experiment_name', type=str)
+    parser.add_argument('--dataset',         help='Training dataset Name.', dest='dataset_type')
 
     # keras-retinanet specific command line parameters
-    parser.add_argument('--dataset',         help='Training dataset Name.', dest='dataset_type')
+    group = parser.add_mutually_exclusive_group()
     group.add_argument('--snapshot',          help='Resume training from a snapshot.')
     group.add_argument('--imagenet-weights',  help='Initialize the model with pretrained imagenet weights. This is the default behaviour.', action='store_const', const=True, default=True)
     group.add_argument('--weights',           help='Initialize the model with weights from a file.')
