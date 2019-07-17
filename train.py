@@ -354,7 +354,7 @@ def parse_args(args):
     # MlOps/Horovod Framework specific command line parameters
     parser.add_argument('--dataset-path',    help='Path to the training dataset.', dest='dataset_path', type=str)
     parser.add_argument('--output-path',     help='Path to the trained model output.', dest='output_path', type=str)
-    parser.add_argument('--tracking-uri,'    help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
+    parser.add_argument('--tracking-uri',    help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
     parser.add_argument('--experiment-name', help='MlFlow Experiment Name.', dest='experiment_name', type=str)
     parser.add_argument('--dataset',         help='Training dataset Name.', dest='dataset_type')
 
@@ -453,7 +453,7 @@ def main(args=None):
         callbacks=callbacks,
     )
     
-    print('training completed ...)
+    print('training completed ...')
 
 if __name__ == '__main__':
     main()
