@@ -322,9 +322,8 @@ def check_args(parsed_args):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
-    """
-    Note: Bypassing the following subparses and including the defaults into `check_args()`
-    """
+#    Note: Bypassing the following subparses and including the defaults into `check_args()`
+
 #    subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
 #    subparsers.required = True
 
