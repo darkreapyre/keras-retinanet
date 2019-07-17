@@ -208,55 +208,55 @@ def create_generators(args):
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side
         )
-    """
-    Note: `csv` and `oid` training is not currently supported.
 
-    elif args.dataset_type == 'csv':
-        train_generator = CSVGenerator(
-            args.annotations,
-            args.classes,
-            transform_generator=transform_generator,
-            batch_size=args.batch_size,
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side
-        )
+    # Note: `csv` and `oid` training is not currently supported.
 
-        if args.val_annotations:
-            validation_generator = CSVGenerator(
-                args.val_annotations,
-                args.classes,
-                batch_size=args.batch_size,
-                image_min_side=args.image_min_side,
-                image_max_side=args.image_max_side
-            )
-        else:
-            validation_generator = None
-    elif args.dataset_type == 'oid':
-        train_generator = OpenImagesGenerator(
-            args.main_dir,
-            subset='train',
-            version=args.version,
-            labels_filter=args.labels_filter,
-            annotation_cache_dir=args.annotation_cache_dir,
-            fixed_labels=args.fixed_labels,
-            transform_generator=transform_generator,
-            batch_size=args.batch_size,
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side
-        )
+    # elif args.dataset_type == 'csv':
+    #     train_generator = CSVGenerator(
+    #         args.annotations,
+    #         args.classes,
+    #         transform_generator=transform_generator,
+    #         batch_size=args.batch_size,
+    #         image_min_side=args.image_min_side,
+    #         image_max_side=args.image_max_side
+    #     )
 
-        validation_generator = OpenImagesGenerator(
-            args.main_dir,
-            subset='validation',
-            version=args.version,
-            labels_filter=args.labels_filter,
-            annotation_cache_dir=args.annotation_cache_dir,
-            fixed_labels=args.fixed_labels,
-            batch_size=args.batch_size,
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side
-        )
-    """
+    #     if args.val_annotations:
+    #         validation_generator = CSVGenerator(
+    #             args.val_annotations,
+    #             args.classes,
+    #             batch_size=args.batch_size,
+    #             image_min_side=args.image_min_side,
+    #             image_max_side=args.image_max_side
+    #         )
+    #     else:
+    #         validation_generator = None
+    # elif args.dataset_type == 'oid':
+    #     train_generator = OpenImagesGenerator(
+    #         args.main_dir,
+    #         subset='train',
+    #         version=args.version,
+    #         labels_filter=args.labels_filter,
+    #         annotation_cache_dir=args.annotation_cache_dir,
+    #         fixed_labels=args.fixed_labels,
+    #         transform_generator=transform_generator,
+    #         batch_size=args.batch_size,
+    #         image_min_side=args.image_min_side,
+    #         image_max_side=args.image_max_side
+    #     )
+
+    #     validation_generator = OpenImagesGenerator(
+    #         args.main_dir,
+    #         subset='validation',
+    #         version=args.version,
+    #         labels_filter=args.labels_filter,
+    #         annotation_cache_dir=args.annotation_cache_dir,
+    #         fixed_labels=args.fixed_labels,
+    #         batch_size=args.batch_size,
+    #         image_min_side=args.image_min_side,
+    #         image_max_side=args.image_max_side
+    #     )
+
     elif args.dataset_type == 'kitti':
         train_generator = KittiGenerator(
             args.kitti_path,
