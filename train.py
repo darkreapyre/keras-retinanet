@@ -491,11 +491,15 @@ def main(args=None):
 
     # evaluate trained model on one worker
     if (hvd.rank() == 0):
+        print("Creating Generator ...")
         generator = create_generator(args)
         if not os.path.exists('/tmp/images'):
             os.makedirs('/tmp/images')
+        print("Loading model ...")
         model = models.load_model(os.path.join(args.output_path, 'model.h5'), backbone_name=args.backbone)
+        print("Converting model ...")
         model = models.convert_model(model, anchor_params=None)
+        print("Evalutaing ...")
         if args.dataset_type == 'coco':
             from ..utils.coco_eval import evaluate_coco
             evaluate_coco(generator, model, 0.05)
