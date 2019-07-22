@@ -9,6 +9,7 @@ import os
 import sys
 import warnings
 import time
+import mlflow
 
 import keras
 import keras.preprocessing.image
@@ -452,6 +453,17 @@ def main(args=None):
         verbose=1,
         callbacks=callbacks,
     )
+
+    if (hvd.rank() == 0):
+        mlflow.tracking.set_tracking_uri(args.tracking_uri)
+        experiment_id=mlflow.create_experiment(args.experiment_id)
+        with mlflow.start_run(experiment_id=experiment_id):
+            mlflow.log_param('epochs', args.epochs)
+            mlflow.log_param('steps', args.steps)
+            mlflow.log_param('batch size', args.batch_size)
+            mlflow.log_param('backbone', args.backbone)
+            mlflow.log_artifacts(args.output_path)
+        mlflow.end_run()
     
     print('training completed ...')
 
