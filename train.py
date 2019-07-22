@@ -166,7 +166,6 @@ def create_generator(args):
             'val2017',
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
             shuffle_groups=False,
         )
     elif args.dataset_type == 'pascal':
@@ -175,7 +174,6 @@ def create_generator(args):
             'test',
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
             shuffle_groups=False,
         )
     elif args.dataset_type == 'csv':
