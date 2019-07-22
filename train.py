@@ -502,6 +502,7 @@ def main(args=None):
         print("Evalutaing ...")
         if args.dataset_type == 'coco':
             from ..utils.coco_eval import evaluate_coco
+            print("Evaluating coco ...")
             evaluate_coco(validation_generator, model, 0.05)
         else:
             average_precisions = evaluate(
