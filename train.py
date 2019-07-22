@@ -456,8 +456,8 @@ def main(args=None):
 
     if (hvd.rank() == 0):
         mlflow.tracking.set_tracking_uri(args.tracking_uri)
-        experiment_id=mlflow.create_experiment(args.experiment_id)
-        with mlflow.start_run(experiment_id=experiment_name):
+        experiment_id=mlflow.create_experiment(args.experiment_name)
+        with mlflow.start_run(experiment_id=experiment_id):
             mlflow.log_param('epochs', args.epochs)
             mlflow.log_param('steps', args.steps)
             mlflow.log_param('batch size', args.batch_size)
