@@ -36,7 +36,6 @@ from ..utils.anchors import make_shapes_callback, anchor_targets_bbox
 from ..utils.keras_version import check_keras_version
 from ..utils.model import freeze as freeze_model
 from ..utils.transform import random_transform_generator
-from ..utils.eval import evaluate
 
 
 def makedirs(path):
@@ -153,44 +152,6 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
 
     return callbacks
 
-# adding `create_generator` for final evaluation
-def create_generator(args):
-    """ Create generators for evaluation.
-    """
-    if args.dataset_type == 'coco':
-        # import here to prevent unnecessary dependency on cocoapi
-        from ..preprocessing.coco import CocoGenerator
-
-        validation_generator = CocoGenerator(
-            args.coco_path,
-            'val2017',
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
-        )
-    elif args.dataset_type == 'pascal':
-        validation_generator = PascalVocGenerator(
-            args.pascal_path,
-            'test',
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
-        )
-    elif args.dataset_type == 'csv':
-        validation_generator = CSVGenerator(
-            args.annotations,
-            args.classes,
-            image_min_side=args.image_min_side,
-            image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
-        )
-    else:
-        raise ValueError('Invalid data type received: {}'.format(args.dataset_type))
-    
-    return validation_generator
 
 def create_generators(args):
     # create random transform generator for augmenting training data
@@ -491,39 +452,7 @@ def main(args=None):
         verbose=1,
         callbacks=callbacks,
     )
-
-    # evaluate trained model on one worker
-    if (hvd.rank() == 0):
-        generator = create_generator(args)
-        if not os.path.exists('/tmp/images'):
-            os.makedirs('/tmp/images')
-        model = models.load_model(os.path.join(args.output_path, 'model.h5'), backbone_name=args.backbone)
-        model = models.convert_model(model, anchor_params=None)
-        if args.dataset_type == 'coco':
-            from ..callbacks.coco import CocoEval
-            evaluate_coco(generator, model, 0.05)
-        else:
-            average_precisions = evaluate(
-                generator,
-                model,
-                iou_threshold=0.5,
-                score_threshold=0.05,
-                max_detections=100,
-                save_path='/tmp/images'
-            )
-            # print evaluation
-            total_instances = []
-            precisions = []
-            for label, (average_precision, num_annotations) in average_precisions.items():
-                print('{:.0f} instances of class'.format(num_annotations),
-                    generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
-                total_instances.append(num_annotations)
-                precisions.append(average_precision)
-            if sum(total_instances) == 0:
-                print('No test instances found.')
-            print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
-            print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
-
+    
     print('training completed ...')
 
 if __name__ == '__main__':
