@@ -184,7 +184,6 @@ def create_generator(args):
             args.classes,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
             shuffle_groups=False,
         )
     else:
