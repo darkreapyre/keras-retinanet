@@ -492,7 +492,7 @@ def main(args=None):
     # evaluate trained model on one worker
     if (hvd.rank() == 0):
         print("Creating Generator ...")
-        generator = create_generator(args)
+        #generator = create_generator(args)
         if not os.path.exists('/tmp/images'):
             os.makedirs('/tmp/images')
         print("Loading model ...")
@@ -502,7 +502,7 @@ def main(args=None):
         print("Evalutaing ...")
         if args.dataset_type == 'coco':
             from ..utils.coco_eval import evaluate_coco
-            evaluate_coco(generator, model, 0.05)
+            evaluate_coco(validation_generator, model, 0.05)
         else:
             average_precisions = evaluate(
                 generator,
