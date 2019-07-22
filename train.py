@@ -497,7 +497,7 @@ def main(args=None):
         model = models.load_model(os.path.join(args.output_path, 'model.h5'), backbone_name=args.backbone)
         model = models.convert_model(model, anchor_params=None)
         if args.dataset_type == 'coco':
-            from ..callbacks.coco import CocoEval
+            from ..utils.coco_eval import evaluate_coco
             evaluate_coco(generator, model, 0.05)
         else:
             average_precisions = evaluate(
