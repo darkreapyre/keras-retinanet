@@ -462,7 +462,7 @@ def main(args=None):
             mlflow.log_param('steps', args.steps)
             mlflow.log_param('batch size', args.batch_size)
             mlflow.log_param('backbone', args.backbone)
-#            mlflow.log_artifacts(args.output_path)
+            mlflow.log_artifacts(args.output_path)
         mlflow.end_run()
     
     print('training completed ...')
