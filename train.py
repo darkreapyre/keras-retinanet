@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import horovod.keras as hvd
-hvd.init()
-
 import argparse
 import functools
 import os
@@ -10,17 +7,23 @@ import sys
 import warnings
 import time
 import mlflow
-
+import horovod.keras as hvd
 import keras
 import keras.preprocessing.image
 from keras.utils import multi_gpu_model
 import tensorflow as tf
+
+
+# Initialize Horovod for multi GPU/CPU training
+hvd.init()
+
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
     import keras_retinanet.bin  # noqa: F401
     __package__ = "keras_retinanet.bin"
+
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
 from .. import layers  # noqa: F401
@@ -101,8 +104,6 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     ]
 
     if hvd.rank() == 0 and args.output_path: # only one worker saves the checkpoint file
-#        # ensure directory created first; otherwise h5py will error after epoch.
-#        makedirs(args.snapshot_path)
         # Create a snapshot for the Epoch
         callbacks.append(
             keras.callbacks.ModelCheckpoint(
@@ -156,6 +157,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
 
 def create_generators(args):
     # create random transform generator for augmenting training data
+    # Note: `csv` and `oid` training is not currently supported.
     if args.random_transform:
         transform_generator = random_transform_generator(
             min_rotation=-0.1,
@@ -169,6 +171,7 @@ def create_generators(args):
             flip_x_chance=0.5,
             flip_y_chance=0.5,
         )
+
     else:
         transform_generator = random_transform_generator(flip_x_chance=0.5)
 
@@ -209,54 +212,6 @@ def create_generators(args):
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side
         )
-
-    # Note: `csv` and `oid` training is not currently supported.
-
-    # elif args.dataset_type == 'csv':
-    #     train_generator = CSVGenerator(
-    #         args.annotations,
-    #         args.classes,
-    #         transform_generator=transform_generator,
-    #         batch_size=args.batch_size,
-    #         image_min_side=args.image_min_side,
-    #         image_max_side=args.image_max_side
-    #     )
-
-    #     if args.val_annotations:
-    #         validation_generator = CSVGenerator(
-    #             args.val_annotations,
-    #             args.classes,
-    #             batch_size=args.batch_size,
-    #             image_min_side=args.image_min_side,
-    #             image_max_side=args.image_max_side
-    #         )
-    #     else:
-    #         validation_generator = None
-    # elif args.dataset_type == 'oid':
-    #     train_generator = OpenImagesGenerator(
-    #         args.main_dir,
-    #         subset='train',
-    #         version=args.version,
-    #         labels_filter=args.labels_filter,
-    #         annotation_cache_dir=args.annotation_cache_dir,
-    #         fixed_labels=args.fixed_labels,
-    #         transform_generator=transform_generator,
-    #         batch_size=args.batch_size,
-    #         image_min_side=args.image_min_side,
-    #         image_max_side=args.image_max_side
-    #     )
-
-    #     validation_generator = OpenImagesGenerator(
-    #         args.main_dir,
-    #         subset='validation',
-    #         version=args.version,
-    #         labels_filter=args.labels_filter,
-    #         annotation_cache_dir=args.annotation_cache_dir,
-    #         fixed_labels=args.fixed_labels,
-    #         batch_size=args.batch_size,
-    #         image_min_side=args.image_min_side,
-    #         image_max_side=args.image_max_side
-    #     )
 
     elif args.dataset_type == 'kitti':
         train_generator = KittiGenerator(
@@ -323,34 +278,7 @@ def check_args(parsed_args):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
-#    Note: Bypassing the following subparses and including the defaults into `check_args()`
-
-#    subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
-#    subparsers.required = True
-
-#    coco_parser = subparsers.add_parser('coco')
-#    coco_parser.add_argument('coco_path', help='Path to dataset directory (ie. /tmp/COCO).')
-
-#    pascal_parser = subparsers.add_parser('pascal')
-#    pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).')
-
-#    kitti_parser = subparsers.add_parser('kitti')
-#    kitti_parser.add_argument('kitti_path', help='Path to dataset directory (ie. /tmp/kitti).')
-
-#    def csv_list(string):
-#        return string.split(',')
-
-#    oid_parser = subparsers.add_parser('oid')
-#    oid_parser.add_argument('main_dir', help='Path to dataset directory.')
-#    oid_parser.add_argument('--version',  help='The current dataset version is v4.', default='v4')
-#    oid_parser.add_argument('--labels-filter',  help='A list of labels to filter.', type=csv_list, default=None)
-#    oid_parser.add_argument('--annotation-cache-dir', help='Path to store annotation cache.', default='.')
-#    oid_parser.add_argument('--fixed-labels', help='Use the exact specified labels.', default=False)
-
-#    csv_parser = subparsers.add_parser('csv')
-#    csv_parser.add_argument('annotations', help='Path to CSV file containing annotations for training.')
-#    csv_parser.add_argument('classes', help='Path to a CSV file containing class label mapping.')
-#    csv_parser.add_argument('--val-annotations', help='Path to CSV file containing annotations for validation (optional).')
+    # Note: Bypassing the subparses and including the defaults into `check_args()`
 
     # MlOps/Horovod Framework specific command line parameters
     parser.add_argument('--dataset-path',    help='Path to the training dataset.', dest='dataset_path', type=str)
@@ -429,8 +357,9 @@ def main(args=None):
             freeze_backbone=args.freeze_backbone
         )
 
-    # print model summary
-    print(model.summary())
+    # Horovod: print model summary on the first worker
+    if hvd.rank() == 0:
+        print(model.summary())
 
     # this lets the generator compute backbone layer shapes using the actual backbone model
     if 'vgg' in args.backbone or 'densenet' in args.backbone:
@@ -458,6 +387,7 @@ def main(args=None):
         callbacks=callbacks,
     )
 
+    # update the MlFlow tracking URI on the first worker
     if (hvd.rank() == 0):
         mlflow.tracking.set_tracking_uri(args.tracking_uri)
         experiment_id=mlflow.create_experiment(args.experiment_name)
@@ -470,6 +400,7 @@ def main(args=None):
         mlflow.end_run()
     
     print('training completed ...')
+
 
 if __name__ == '__main__':
     main()
