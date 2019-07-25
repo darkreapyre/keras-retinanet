@@ -92,12 +92,12 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0, freeze_
     return model, training_model, prediction_model
 
 
-def create_callbacks(model, training_model, prediction_model, validation_generator, args):
+def create_callbacks(model, training_model, prediction_model, validation_generator, args, verbose):
     # Create Horovod callback    
     callbacks = [
         hvd.callbacks.BroadcastGlobalVariablesCallback(0),
         hvd.callbacks.MetricAverageCallback(),
-        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=1)
+        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=verbose)
     ]
 
     if hvd.rank() == 0 and args.output_path: # only one worker saves the checkpoint file
@@ -402,6 +402,9 @@ def main(args=None):
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     keras.backend.tensorflow_backend.set_session(get_session())
 
+    # Horovod: print logs on the first worker.
+    verbose = 1 if hvd.rank() == 0 else 0
+
     # create the generators
     train_generator, validation_generator = create_generators(args)
 
@@ -443,6 +446,7 @@ def main(args=None):
         prediction_model,
         validation_generator,
         args,
+        verbose
     )
 
     # start training
@@ -450,7 +454,7 @@ def main(args=None):
         generator=train_generator,
         steps_per_epoch=args.steps // hvd.size(),
         epochs=args.epochs,
-        verbose=1,
+        verbose=verbose,
         callbacks=callbacks,
     )
 
