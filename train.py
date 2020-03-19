@@ -6,7 +6,7 @@ import os
 import sys
 import warnings
 import time
-import mlflow
+#import mlflow
 import horovod.keras as hvd
 import keras
 import keras.preprocessing.image
@@ -283,8 +283,8 @@ def parse_args(args):
     # MlOps/Horovod Framework specific command line parameters
     parser.add_argument('--dataset-path',    help='Path to the training dataset.', dest='dataset_path', type=str)
     parser.add_argument('--output-path',     help='Path to the trained model output.', dest='output_path', type=str)
-    parser.add_argument('--tracking-uri',    help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
-    parser.add_argument('--experiment-name', help='MlFlow Experiment Name.', dest='experiment_name', type=str)
+    # parser.add_argument('--tracking-uri',    help='MlFlow Tracking API URL.', dest='tracking_uri', type=str)
+    # parser.add_argument('--experiment-name', help='MlFlow Experiment Name.', dest='experiment_name', type=str)
     parser.add_argument('--dataset',         help='Training dataset Name.', dest='dataset_type')
 
     # keras-retinanet specific command line parameters
@@ -387,17 +387,17 @@ def main(args=None):
         callbacks=callbacks,
     )
 
-    # update the MlFlow tracking URI on the first worker
-    if (hvd.rank() == 0):
-        mlflow.tracking.set_tracking_uri(args.tracking_uri)
-        experiment_id=mlflow.create_experiment(args.experiment_name)
-        with mlflow.start_run(experiment_id=experiment_id):
-            mlflow.log_param('epochs', args.epochs)
-            mlflow.log_param('steps', args.steps)
-            mlflow.log_param('batch size', args.batch_size)
-            mlflow.log_param('backbone', args.backbone)
-            mlflow.log_artifacts(args.output_path)
-        mlflow.end_run()
+    # # update the MlFlow tracking URI on the first worker
+    # if (hvd.rank() == 0):
+    #     mlflow.tracking.set_tracking_uri(args.tracking_uri)
+    #     experiment_id=mlflow.create_experiment(args.experiment_name)
+    #     with mlflow.start_run(experiment_id=experiment_id):
+    #         mlflow.log_param('epochs', args.epochs)
+    #         mlflow.log_param('steps', args.steps)
+    #         mlflow.log_param('batch size', args.batch_size)
+    #         mlflow.log_param('backbone', args.backbone)
+    #         mlflow.log_artifacts(args.output_path)
+    #     mlflow.end_run()
     
     print('training completed ...')
 
